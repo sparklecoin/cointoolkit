@@ -191,6 +191,7 @@ $(document).ready(function() {
 			}
 			$("#verifyRsData").removeClass("hidden");
 			$("#verify .verifyLink").val(document.location.origin+''+document.location.pathname+'?mode='+$("#coinSelector").val()+'&verify='+$("#verifyScript").val());
+            history.pushState({}, null, $("#verify .verifyLink").val());
 			return true;
 		} else {
 			return false;
@@ -335,6 +336,7 @@ $(document).ready(function() {
 			$(h).appendTo("#verifyTransactionData .outs tbody");
 
 			$("#verify .verifyLink").val(document.location.origin+''+document.location.pathname+'?mode='+$("#coinSelector").val()+'&verify='+$("#verifyScript").val());
+            history.pushState({}, null, $("#verify .verifyLink").val());
 			return true;
 		} catch(e) {
 			return false;
@@ -480,6 +482,7 @@ $(document).ready(function() {
 				$("#verifyPubKey .address").val(coinjs.pubkey2address(pubkey));
 				$("#verifyPubKey").removeClass("hidden");
 				$("#verify .verifyLink").val(document.location.origin+''+document.location.pathname+'?mode='+$("#coinSelector").val()+'&verify='+$("#verifyScript").val());
+                history.pushState({}, null, $("#verify .verifyLink").val());
 				return true;
 			} catch (e) {
 				return false;
@@ -579,6 +582,126 @@ $(document).ready(function() {
 	}
 	
 	/* external providers */
+	
+	var peerBasedExplorer = {
+		listUnspent: function(endpoint) {
+			return function(redeem){
+				var msgSucess = '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="' + endpoint + '/address/'+redeem.addr+'/1/newest" target="_blank">'+redeem.addr+'</a>'
+				var msgError = '<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs! Is <a href="' + endpoint + '/">' + endpoint + '/</a> down?';
+				$.ajax ({
+					type: "GET",
+					data: {
+						format: "json",
+						q: "select * from json where url='" + endpoint + "/api/address/balance/" + redeem.addr + "/full'"
+					},
+					url: 'https://query.yahooapis.com/v1/public/yql',
+					dataType: "json",
+					error: function(data) {
+						$("#redeemFromStatus").removeClass('hidden').html(msgError);
+						$("#redeemFromBtn").html("Load").attr('disabled',false);
+					},
+					success: function(data) {
+						if (data.hasOwnProperty('query') && data.query.hasOwnProperty('results') && data.query.results.hasOwnProperty('json') && data.query.results.json.hasOwnProperty('json')) {
+							data = data.query.results.json.json;
+						} else if (data.hasOwnProperty('query') && data.query.hasOwnProperty('results') && data.query.results.hasOwnProperty('json')){
+							data = [data.query.results.json];
+						} else {
+							data = [];
+						}
+
+						if (coinjs.debug) {console.log(data)};
+						if (data.length == 0) {
+							$("#redeemFromStatus").removeClass('hidden').html(msgError);
+							$("#redeemFromBtn").html("Load").attr('disabled',false);
+						} else {
+							for(var i=0;i<data.length;i++){
+								if (redeem.isMultisig==true) {
+									var script = $("#redeemFrom").val();
+								} else {
+									var script = data[i].outScript;
+									script = script.replace('OP_DUP OP_HASH160 ', '76a914');
+									script = script.replace(' OP_EQUALVERIFY OP_CHECKSIG', '88ac');
+								}
+
+								addOutput(data[i].txHash, data[i].outNum, script, data[i].val);
+							}
+							$("#redeemFromAddress").removeClass('hidden').html(msgSucess);
+						}
+					},
+					complete: function(data, status) {
+						$("#redeemFromBtn").html("Load").attr('disabled',false);
+						totalInputAmount();
+					}
+				});
+			}
+		},
+		getInputAmount: function(endpoint) {
+			return function(txid, index, callback) {
+				$.ajax ({
+					type: "GET",
+					data: {
+						format: "json",
+						q: "select * from json where url='" + endpoint + '/api/v1/txDetails/' + txid + "'"
+					},
+					url: 'https://query.yahooapis.com/v1/public/yql',
+					dataType: "json",
+					error: function(data) {
+						callback(false);
+					},
+					success: function(data) {
+						if (data.hasOwnProperty('query') && data.query.hasOwnProperty('results') && data.query.results.hasOwnProperty('json') && data.query.results.json.hasOwnProperty('json')) {
+							data = data.query.results.json.json;
+						} else {
+							data = [];
+						}
+
+						if (coinjs.debug) {console.log(data)};
+						if (data.exists && data.outputs[index]) {
+							callback(parseInt(data.outputs[index].outValInt*("1e"+coinjs.decimalPlaces), 10));
+						} else {
+							callback(false);
+						}
+					}
+				});
+			}
+		},
+		broadcast: function(endpoint) {
+			return function(thisbtn){
+				var orig_html = $(thisbtn).html();
+				$(thisbtn).html('Please wait, loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>').attr('disabled',true);
+				$.ajax ({
+					type: "POST",
+					url: endpoint + "/api/v1/sendrawtx",
+					data: {
+						"rawTx": $("#rawTransaction").val(),
+						"checkInputs": 1
+					},
+					dataType: "json",
+					error: function(data) {
+						data = $.parseJSON(data.responseText);
+						var r = '';
+						r += (data.data) ? data.data : '';
+						r += (data.status) ? ' '+data.status : '';
+						r = (r!='') ? r : ' Failed to broadcast. Internal server error';
+						$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(r).prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+					},
+					success: function(data) {
+						data = $.parseJSON(data.responseText);
+						if(data.success==true){
+							$("#rawTransactionStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(' Txid: '+data.data);
+						} else {
+							$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(' Error'+data.status).prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+						}
+					},
+					complete: function(data, status) {
+						$("#rawTransactionStatus").fadeOut().fadeIn();
+						$(thisbtn).html(orig_html).attr('disabled',false);
+					}
+				});
+			}
+		}
+	};
+
 
 	var nuBasedExplorer = {
 		listUnspent: function(endpoint) {
@@ -699,7 +822,7 @@ $(document).ready(function() {
 		}
 	};
 
-	var bcBasedExplorer = {
+var bcBasedExplorer = {
 		listUnspent: function(endpoint) {
 			return function(redeem){
 				var msgSucess = '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="' + endpoint + '/address/'+redeem.addr+'/1/newest" target="_blank">'+redeem.addr+'</a>'
@@ -1054,6 +1177,17 @@ $(document).ready(function() {
 						}
 					});
 				}
+			}
+		},
+		peercoin: {
+			listUnspent: {
+                "mintr": peerBasedExplorer.listUnspent('https://peercoin.mintr.org')
+			},
+			broadcast: {
+                "mintr": peerBasedExplorer.listUnspent('https://peercoin.mintr.org')
+			},
+			getInputAmount: {
+                "mintr": peerBasedExplorer.listUnspent('https://peercoin.mintr.org')
 			}
 		},
 		nubits: {
