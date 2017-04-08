@@ -35,8 +35,13 @@
                     member: [
                         memberOf.Indicium.ICO_PPC
                     ]
+                },
+                "027aaa61462aa2d1c74b0388044143af05538cec00bfc18e16a5da54e7050fa1f2": {
+                    member: [
+                        memberOf.Indicium.ICO_BTC
+                    ]
                 }
-            },
+           },
             "nagalim": {
                 "03b48093447b0bd80ca371600892422bb39f1a2d1ecf88a20ae50f8beb9a004d3f": {
                     member: [
@@ -54,7 +59,13 @@
                     member: [
                         memberOf.Indicium.ICO_PPC
                     ]
+                },
+                "0297a38afeb06f176073cd99d344aa084214b481eb6d80386d2f9da353406dcca5": {
+                    member: [
+                        memberOf.Indicium.ICO_BTC
+                    ]
                 }
+
             },
             "saeveritt": {
                 "035c9f3e5053c1adb1f737c25b8c76310ea5302e571f377ccc15aef2816d76ce45": {
