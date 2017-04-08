@@ -16,6 +16,7 @@
 		scriptHash: {
             // Indicium addresses scripthash. // Commented with redeemScript
             "3152a6d3cfeab689e172698f401cd25ff8ee9ef3": {name:"indicium ico ppc multisig #1"}, // 532102084d2c59a9b228bfbe58e3359c366c62951c1a590a20e738db64b7c0074aadba210353e8d13cab823bf8f017ee57c71f52c7fd96111016477b7273cf818249eebac121035c9f3e5053c1adb1f737c25b8c76310ea5302e571f377ccc15aef2816d76ce45210399989d397d3188e9e9afe718fc56776a143e36628f7661ca9b5c20f651d97e0b2103b48093447b0bd80ca371600892422bb39f1a2d1ecf88a20ae50f8beb9a004d3f55ae
+            "4dda250f6bde20473725636fc94e324af1d611c7": {name:"indicium ico btc multisig #1"}, // 53210224ba8b09dc976069466b3f95e8fc78dcf0900804da851e7d236d6a46646e861f21027aaa61462aa2d1c74b0388044143af05538cec00bfc18e16a5da54e7050fa1f2210297a38afeb06f176073cd99d344aa084214b481eb6d80386d2f9da353406dcca52102fb39c1b1882e1085e7eee50a67145a776e48b017f141941a3fb9ff2cc5f0c5822103cd3531fee41e09109c3672b958eeb283477b926a0b5b2471d93e46c7e5d4753255ae
 		},
 		identities: { // id.pubkey{memberof, [deprecated]}
             "backpacker": {
@@ -65,7 +66,6 @@
                         memberOf.Indicium.ICO_BTC
                     ]
                 }
-
             },
             "saeveritt": {
                 "035c9f3e5053c1adb1f737c25b8c76310ea5302e571f377ccc15aef2816d76ce45": {
