@@ -1705,7 +1705,7 @@
 	}
     
     coinjs.getPublic = function(coinid,accountid,addressid) {
-        comm.create_async(0, true).then(function(comm) {
+        coinjs.comm.create_async(0, true).then(function(comm) {
 
             var btc = new ledger.btc(comm);
             var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/0/" + addressid.toString()
