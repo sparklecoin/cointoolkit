@@ -651,7 +651,7 @@ $(document).ready(function() {
 				$(thisbtn).html('Please wait, loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>').attr('disabled',true);
                 $.ajax ({
                     type: "POST",
-                    url: "https://chainz.cryptoid.info/grs/api.dws?q=pushtx&key="+coinjs.apikey,
+                    url: "https://chainz.cryptoid.info/ppc/api.dws?q=pushtx&key="+coinjs.apikey,
                     data: $("#rawTransaction").val(), //{"tx_hex":$("#rawTransaction").val()},
                     dataType: "text", //"json",
                     error: function(data, status, error) {
