@@ -955,7 +955,42 @@ var bcBasedExplorer = {
 	var providers = {
 		bitcoin: {
 			listUnspent: {
-				"blockr.io": function(redeem){
+                "cryptoid": function(redeem){
+                    $.ajax ({
+                        type: "GET",
+                        url: "https://chainz.cryptoid.info/btc/api.dws?q=unspent&key="+coinjs.apikey+"&active="+redeem.addr,
+                        dataType: "json",
+                        error: function(data) {
+                            $("#redeemFromStatus").removeClass('hidden').html(msgError);
+                            $("#redeemFromBtn").html("Load").attr('disabled',false);
+                        },
+                        success: function(data) {
+                            if (coinjs.debug) {console.log(data)};
+                            if ((data.unspent_outputs)){
+                                $("#redeemFromAddress").removeClass('hidden').html(
+                                    '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="https://chainz.cryptoid.info/ppc/address.dws?'+
+                                    redeem.addr+'" target="_blank">'+redeem.addr+'</a>');
+                                for(i = 0; i < data.unspent_outputs.length; ++i){
+                                    var o = data.unspent_outputs[i];
+                                    var tx = ((""+o.tx_hash).match(/.{1,2}/g).reverse()).join("")+'';
+                                    if(tx.match(/^[a-f0-9]+$/)){
+                                        var n = o.tx_ouput_n;
+                                        var script = (redeem.isMultisig==true) ? $("#redeemFrom").val() : o.script;
+                                        var amount = (o.value /100000000).toFixed(8);;
+                                        addOutput(tx, n, script, amount);
+                                    }
+                                }
+                            } else {
+                                $("#redeemFromStatus").removeClass('hidden').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs.');
+                            }
+                        },
+                        complete: function(data, status) {
+                            $("#redeemFromBtn").html("Load").attr('disabled',false);
+                            totalInputAmount();
+                        }
+                    });
+			    },
+			    "blockr.io": function(redeem){
 					$.ajax ({
 						type: "GET",
 						url: "//btc.blockr.io/api/v1/address/unspent/"+redeem.addr+"?unconfirmed=1",
@@ -1012,9 +1047,9 @@ var bcBasedExplorer = {
 							$("#redeemFromBtn").html("Load").attr('disabled',false);
 							totalInputAmount();
 						}
-					});
-				}
-			},
+                    });
+                },
+            },
 			broadcast: {
 				"blockr.io": function(thisbtn){
 					var orig_html = $(thisbtn).html();
