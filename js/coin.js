@@ -14,6 +14,7 @@
 	
 	/* Bitcoin by default */
 	coinjs.apikey = "1205735eba8c";
+	coinjs.conn = ledger.comm_u2f;
 	coinjs.pub = 0x00;
 	coinjs.priv = 0x80;
 	coinjs.multisig = 0x05;
@@ -1702,5 +1703,18 @@
 	coinjs.formatAmount = function(amount) {
 		return (amount/("1e"+coinjs.decimalPlaces)).toString() + " " + coinjs.symbol;
 	}
+    
+    coinjs.getPublic = function(coinid,accountid,addressid) {
+        comm.create_async(0, true).then(function(comm) {
 
+            var btc = new ledger.btc(comm);
+            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/0/" + addressid.toString()
+            
+            btc.getWalletPublicKey_async(path).then(function(result) {
+                console.log(path,result);
+            }).fail(function(ex) {console.log(path,ex);});
+
+        }).fail(function(ex) {console.log(ex);});
+
+    }
 })();
