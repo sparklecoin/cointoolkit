@@ -11,10 +11,10 @@
 
 	/* public vars */
 	coinjs.debug = false;
-	
-	/* Bitcoin by default */
 	coinjs.apikey = "1205735eba8c";
-	coinjs.conn = ledger.comm_u2f;
+	coinjs.comm = ledger.comm_u2f;
+
+	/* Bitcoin by default */
 	coinjs.pub = 0x00;
 	coinjs.priv = 0x80;
 	coinjs.multisig = 0x05;
