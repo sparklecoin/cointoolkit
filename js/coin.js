@@ -13,6 +13,7 @@
 	coinjs.debug = false;
 	
 	/* Bitcoin by default */
+	coinjs.apikey = "d47da926b82e";
 	coinjs.pub = 0x00;
 	coinjs.priv = 0x80;
 	coinjs.multisig = 0x05;
