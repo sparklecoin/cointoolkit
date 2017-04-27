@@ -9633,7 +9633,7 @@ LedgerBtc.prototype.getTrustedInputRaw_async = function(firstRound, indexLookup,
 		});
 }
 
-LedgerBtc.prototype.getTrustedInput_async = function(indexLookup, transaction) {
+LedgerBtc.prototype.getTrustedInput_async = function(indexLookup, transaction, isPeercoin) {
 	var currentObject = this;
 	var deferred = Q.defer();
 	var processScriptBlocks = function(script, sequence) {          	
@@ -9707,7 +9707,12 @@ LedgerBtc.prototype.getTrustedInput_async = function(indexLookup, transaction) {
 			}
 		);          	
 	}
-	var data = Buffer.concat([transaction['version'], currentObject.createVarint(transaction['inputs'].length)]);
+    if(isPeercoin) {
+        var data = Buffer.concat([transaction['version'], transaction['time'], currentObject.createVarint(transaction['inputs'].length)]);
+    }
+    else {
+	    var data = Buffer.concat([transaction['version'], currentObject.createVarint(transaction['inputs'].length)]);
+    }
 	currentObject.getTrustedInputRaw_async(true, indexLookup, data).then(function (result) {
 		processInputs();
 	}).fail(function (err) { deferred.reject(err); });
@@ -9980,7 +9985,7 @@ LedgerBtc.prototype.createPaymentTransactionNew_async = function(inputs, associa
 
 	utils.foreach(inputs, function (input, i) {
 		return utils.doIf(!resuming, function () {
-			return self.getTrustedInput_async(input[1], input[0])
+			return self.getTrustedInput_async(input[1], input[0], isPeercoin)
 				.then(function (trustedInput) {
 						var inputItem = {};
 						inputItem['trustedInput'] = true;
@@ -10114,7 +10119,7 @@ LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeyse
 
 	utils.foreach(inputs, function (input, i) {
 		return utils.doIf(!resuming, function () {
-			return self.getTrustedInput_async(input[1], input[0])
+			return self.getTrustedInput_async(input[1], input[0], isPeercoin)
 				.then(function (trustedInput) {
 						var inputItem = {};
 						inputItem['trustedInput'] = false;
