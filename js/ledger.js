@@ -9747,7 +9747,7 @@ LedgerBtc.prototype.startUntrustedHashTransactionInputRaw_async = function (newT
 LedgerBtc.prototype.startUntrustedHashTransactionInput_async = function (newTransaction, transaction, inputs, isPeercoin) {
 	var currentObject = this;
 
-	var data 
+	var data; 
     if (isPeercoin) {
          data = Buffer.concat([transaction['version'],
             transaction['time'],
