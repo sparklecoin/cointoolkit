@@ -10106,7 +10106,7 @@ LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeyse
 	if (typeof sigHashType == "undefined") {
 		sigHashType = LedgerBtc.SIGHASH_ALL;
 	}	
-    if (typeof isPeercoin == "undefuned") {
+    if (typeof isPeercoin == "undefined") {
         isPeercoin = 0;
     }
 
