@@ -9744,7 +9744,7 @@ LedgerBtc.prototype.startUntrustedHashTransactionInputRaw_async = function (newT
 		return this.comm.exchange(buffer.toString('hex'), [0x9000]);
 }
 
-LedgerBtc.prototype.startUntrustedHashTransactionInput_async = function (firstRun, newTransaction, transaction, inputs, isPeercoin) {
+LedgerBtc.prototype.startUntrustedHashTransactionInput_async = function (newTransaction, transaction, inputs, isPeercoin) {
 	var currentObject = this;
 
 	var data; 
