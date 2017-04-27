@@ -3,9 +3,9 @@ Cointoolkit
 
 A Open Source Browser Based Bitcoin Wallet.
 
-Live version available at http://ttutdxh-nubits.github.io/cointoolkit/
+Live version available at https://backpacker69.github.io/cointoolkit/
 
-Github URL: https://github.com/ttutdxh-nubits/cointoolkit
+Github URL: https://github.com/backpacker69/cointoolkit
 
 - Offline Compressed & uncompressed Address creation.
 - Offline Multisignature Address creation.
@@ -20,10 +20,5 @@ Github URL: https://github.com/ttutdxh-nubits/cointoolkit
 - Add custom data to transactions with the use of OP_RETURN.
 - Support current Dark Wallet Stealth Address structure (as of version Alpha 7) for outputs.
 - Brain wallet support.
-- Compatible with bitcoin-qt
-- An offical .onion address for tor users.
 - Offline qrcode creator and scanning tool
 - HD (bip32) support
-- Supports altcoins such as litecoin
-
-Donate to 1JbsRVvU93PXN2JovuDE2NJTVNWkGEFrvx to see more development!
