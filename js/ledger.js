@@ -9961,7 +9961,7 @@ LedgerBtc.prototype.createPaymentTransactionNew_async = function(inputs, associa
 	var defaultVersion = Buffer.alloc(4);	
 	defaultVersion.writeUInt32LE(1, 0);
     var defaultTime = Buffer.alloc(4);
-    defaultTime.writeUInt32LE(Data.now() / 1000 | 0, 0);
+    defaultTime.writeUInt32LE(Date.now() / 1000 | 0, 0);
 	var trustedInputs = [];
 	var regularOutputs = [];
 	var signatures = [];
