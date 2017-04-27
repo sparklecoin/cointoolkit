@@ -9960,6 +9960,8 @@ LedgerBtc.prototype.createPaymentTransactionNew_async = function(inputs, associa
 	var nullScript = Buffer.alloc(0);
 	var defaultVersion = Buffer.alloc(4);	
 	defaultVersion.writeUInt32LE(1, 0);
+    var defaultTime = Buffer.alloc(4);
+    defaultTime.writeUInt32LE(Data.now() / 1000 | 0, 0);
 	var trustedInputs = [];
 	var regularOutputs = [];
 	var signatures = [];
@@ -9999,7 +10001,7 @@ LedgerBtc.prototype.createPaymentTransactionNew_async = function(inputs, associa
 		// Pre-build the target transaction
 		targetTransaction['version'] = defaultVersion;
         if (isPeercoin) {
-            targetTransaction['time'] = Date.now() / 1000
+            targetTransaction['time'] = defaultTime; 
             }
 		targetTransaction['inputs'] = [];
 
@@ -10095,7 +10097,7 @@ LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeyse
 	var defaultVersion = Buffer.alloc(4);	
 	defaultVersion.writeUInt32LE(1, 0);
     var defaultTime = Buffer.alloc(4);
-    defaultTime.writeUInt32LE(int(Date.now()/1000), 0)
+    defaultTime.writeUInt32LE(Date.now()/1000 | 0, 0)
 	var trustedInputs = [];
 	var regularOutputs = [];
 	var signatures = [];
