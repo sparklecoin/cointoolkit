@@ -582,7 +582,103 @@ $(document).ready(function() {
 	}
 	
 	/* external providers */
+		
+	var mercatorBasedExplorer = {
+		listUnspent: function(endpoint) {
+			return function(redeem){
+				var msgSucess = '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="' + endpoint + '/address/'+redeem.addr+'/1/newest" target="_blank">'+redeem.addr+'</a>'
+				var msgError = '<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs! Is <a href="' + endpoint + '/">' + endpoint + '/</a> down?';
+                $.ajax ({
+                    type: "GET",
+                    url: endpoint + '/api/unstable/address/unspent/'+redeem.addr,
+                    dataType: "json",
+                    error: function(data) {
+                        $("#redeemFromStatus").removeClass('hidden').html(msgError);
+                        $("#redeemFromBtn").html("Load").attr('disabled',false);
+                    },
+                    success: function(data) {
+                        if (coinjs.debug) {console.log(data)};
+                        if ((data.length)){
+                            $("#redeemFromAddress").removeClass('hidden').html(
+                                '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="https://chainz.cryptoid.info/ppc/address.dws?'+
+                                redeem.addr+'" target="_blank">'+redeem.addr+'</a>');
+                            for(i = 0; i < data.length; ++i){
+                                var o = data[i];
+                                var tx = o.txid;
+                                if(tx.match(/^[a-f0-9]+$/)){
+                                    var n = o.vout;
+                                    var script = (redeem.isMultisig==true) ? $("#redeemFrom").val() : o.scriptPubKey;
+                                    var amount = o.amount;;
+                                    addOutput(tx, n, script, amount);
+                                }
+                            }
+                        } else {
+                            $("#redeemFromStatus").removeClass('hidden').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs.');
+                        }
+                    },
+                    complete: function(data, status) {
+                        $("#redeemFromBtn").html("Load").attr('disabled',false);
+                        totalInputAmount();
+                    }
+                });
+			}
+		},
+		getInputAmount: function(endpoint) {
+			return function(txid, index, callback) {
+	 			$.ajax ({
+                    type: "GET",
+                    url: endpoint + '/api/unstable/tx/'+txid,
+                    dataType: "json",
+                    error: function(data) {
+                        callback(false);
+                    },
+                    success: function(data) {
+						if (coinjs.debug) {console.log(data)};
+						if (data.exists && data.outputs[index]) {
+							callback(parseInt(data.outputs[index].amount*("1e"+coinjs.decimalPlaces), 10));
+						} else {
+							callback(false);
+						}
 	
+                    },
+                });
+    
+			}
+		},
+		broadcast: function(endpoint) {
+			return function(thisbtn){
+				var orig_html = $(thisbtn).html();
+				$(thisbtn).html('Please wait, loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>').attr('disabled',true);
+                $.ajax ({
+                    type: "POST",
+                    url: endpoint + '/api/unstable/sendraw/'+txid,
+                    data: $("#rawTransaction").val(), //{"tx_hex":$("#rawTransaction").val()},
+                    dataType: "text", //"json",
+                    error: function(data, status, error) {
+                        var obj = data.responseText; //$.parseJSON(data.responseText);
+                        var r = '';
+                        r += obj.length ? obj : '';//(obj.data.tx_hex) ? obj.data.tx_hex : '';
+                        r = (r!='') ? r : ' Failed to broadcast'; // build response 
+                        $("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(r).prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+                    },
+                        success: function(data) {
+                        //var obj = data.responseText; //$.parseJSON(data.responseText);
+                        if(data.length){
+                            $("#rawTransactionStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(' Txid: '+data);
+                        } else {
+                            $("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(' Unexpected error, please try again').prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+                        }
+                    },
+                    complete: function(data, status) {
+                        $("#rawTransactionStatus").fadeOut().fadeIn();
+                        $(thisbtn).val('Submit').attr('disabled',false);                
+                    }
+                });
+			}
+		}
+	};
+
+
 	var peerBasedExplorer = {
 		listUnspent: function(endpoint) {
 			return function(redeem){
@@ -1190,7 +1286,7 @@ var bcBasedExplorer = {
 				}
 			}
 		},
-		peercoin: {
+	    peercoin: {
 			listUnspent: {
                 "cryptoid": peerBasedExplorer.listUnspent('https://chainz.cryptoid.info')
 			},
@@ -1199,6 +1295,17 @@ var bcBasedExplorer = {
 			},
 			getInputAmount: {
                 "cryptoid": peerBasedExplorer.getInputAmount('https://chainz.cryptoid.info')
+			}
+		},
+        peercoin_testnet: {
+			listUnspent: {
+                "atlas": mercatorBasedExplorer.listUnspent('http://137.74.40.81:4000/')
+			},
+			broadcast: {
+                "atlas": mercatorBasedExplorer.broadcast('http://137.74.40.81:4000/')
+			},
+			getInputAmount: {
+                "atlas": mercatorBasedExplorer.getInputAmount('http://137.74.40.81:4000/')
 			}
 		},
 		nubits: {
