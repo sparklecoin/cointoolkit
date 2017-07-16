@@ -2134,7 +2134,9 @@ var bcBasedExplorer = {
 			}
 			
 			coinjs.decimalPlaces = $("#coinjs_decimalplaces").val()*1;
+
 			coinjs.symbol = $("#coinjs_symbol").val();
+			coinjs.bip44 = $("#coinjs_bip44").val()*1;
 			
 			$("#rawSubmitBtn").attr('rel',$("#coinjs_broadcast option:selected").val());
 			$("#redeemFromBtn").attr('rel',$("#coinjs_utxo option:selected").val());
@@ -2255,7 +2257,11 @@ var bcBasedExplorer = {
 		$("#coinjs_extraunitfieldvalue").val(o[9]);
 		
 		$("#coinjs_decimalplaces").val(o[10]);
+
 		$("#coinjs_symbol").val(o[11]);
+
+		$("#coinjs_bip44").val(o[12]);
+
 
 		// hide/show custom screen
 		if($("option:selected",this).val()=="custom"){

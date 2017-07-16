@@ -1708,19 +1708,19 @@
         coinjs.comm.create_async(0, true).then(function(comm) {
 
             var btc = new ledger.btc(comm);
-            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/0/" + addressid.toString()
+            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/" + addressid.toString() + "/0"
             
             btc.getWalletPublicKey_async(path).then(function(result) {
                 console.log(path,result);
             }).fail(function(ex) {console.log(path,ex);});
-
+/*
             var tx1 = btc.splitTransaction("010000006b9301590105bf2449d907fc4c073e92f445d0df721bf8c9d1acca4b67b7d4235a96587c720100000049483045022100f149fd4e691a6e3b6a04738abb1e8e29233e576b877c70068f1b632764522af3022037f455c01cef036c3bef8a79963a9abea9c7b41b809de168e7af3b259282a23a01ffffffff0240cdd701000000001976a9143e8e3a29f24ada651ec2717409bd39d30c22b51c88ac00e1f5050000000017a91461b8b4642fa4ee1c1d9f01db544934ef02c999418700000000", 1);
 
             btc.signP2SHTransaction_async([ [tx1, 1, "522102db4d785e65d6082f430b90577b1ab69b8db789be00a94bf81ec49f38fc77c0884104131f4fb6fdc603ad3859c2c5b3f246f1ee3ba5391600e960b9be4c59f609b3dd320b38ef7cae98f1debb622db01f37087a3bd05e266d73e43631ee18b45a484552ae"] ], [path], "0310270000000000001976a9141e667ee94ea8e62c63fe59a0269bb3c091c86ca388ac0000000000000000116a0f080112096d756c74696b7661722004f0b9f5050000000017a91461b8b4642fa4ee1c1d9f01db544934ef02c9994187", undefined, undefined, 1).then(function(result) {
                 console.log(result);
                 }).fail(function(ex) {console.log(ex);});
 
-
+*/
         }).fail(function(ex) {console.log(ex);});
 
     }
