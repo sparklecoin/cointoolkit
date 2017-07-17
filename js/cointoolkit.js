@@ -730,7 +730,7 @@ $(document).ready(function() {
                     },
                     success: function(data) {
 						if (coinjs.debug) {console.log(data)};
-						if (data.exists && data.outputs[index]) {
+						if (data.outputs.length > index) {
 							callback(parseInt(data.outputs[index].amount*("1e"+coinjs.decimalPlaces), 10));
 						} else {
 							callback(false);
