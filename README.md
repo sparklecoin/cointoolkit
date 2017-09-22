@@ -3,9 +3,9 @@ Cointoolkit
 
 A Open Source Browser Based Bitcoin Wallet.
 
-Live version available at https://backpacker69.github.io/cointoolkit/
+Live version available at https://sparklecoin.github.io/cointoolkit/
 
-Github URL: https://github.com/backpacker69/cointoolkit
+Github URL: https://github.com/sparklecoin/cointoolkit
 
 - Offline Compressed & uncompressed Address creation.
 - Offline Multisignature Address creation.
