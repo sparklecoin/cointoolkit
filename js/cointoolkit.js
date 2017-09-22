@@ -1795,7 +1795,7 @@ var bcBasedExplorer = {
 	});
 
 	$("#recipients .addressAddTo").click(function(){
-		if($("#recipients .addressRemoveTo").length<19){
+		if($("#recipients .addressRemoveTo").length<99){
 			var clone = '<div class="row recipient"><br>'+$(this).parent().parent().html()+'</div>';
 			$("#recipients").append(clone);
 			$("#recipients .glyphicon-plus:last").removeClass('glyphicon-plus').addClass('glyphicon-minus');
