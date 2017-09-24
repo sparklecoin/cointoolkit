@@ -1741,8 +1741,10 @@
                 // fetch and split raw txn
                 var rawtxn = "010000006b9301590105bf2449d907fc4c073e92f445d0df721bf8c9d1acca4b67b7d4235a96587c720100000049483045022100f149fd4e691a6e3b6a04738abb1e8e29233e576b877c70068f1b632764522af3022037f455c01cef036c3bef8a79963a9abea9c7b41b809de168e7af3b259282a23a01ffffffff0240cdd701000000001976a9143e8e3a29f24ada651ec2717409bd39d30c22b51c88ac00e1f5050000000017a91461b8b4642fa4ee1c1d9f01db544934ef02c999418700000000";
                 var inputtxn = btc.splitTransaction(rawtxn,1);
-                delete inputtxn.inputs;
-		console.log(inputtxn);
+                //delete inputtxn.inputs;
+
+                inputtxn.inputs = txn.inputs;
+                console.log(inputtxn);
                 current.push(inputtxn);
                 current.push(new Uint32Array(input.prevout.slice(32))[0])
                 current.push(Crypto.util.bytesToHex(input.script))
