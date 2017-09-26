@@ -1068,7 +1068,7 @@ var bcBasedExplorer = {
                                     redeem.addr+'" target="_blank">'+redeem.addr+'</a>');
                                 for(i = 0; i < data.unspent_outputs.length; ++i){
                                     var o = data.unspent_outputs[i];
-                                    var tx = ((""+o.tx_hash).match(/.{1,2}/g).reverse()).join("")+'';
+                                    var tx = ""+o.tx_hash;
                                     if(tx.match(/^[a-f0-9]+$/)){
                                         var n = o.tx_ouput_n;
                                         var script = (redeem.isMultisig==true) ? $("#redeemFrom").val() : o.script;
