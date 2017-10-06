@@ -104,7 +104,7 @@
 
 						<div class="jumbotron">
 							<h1>Cointoolkit</h1>
-							<p>Be your own bank, take control of your own money and start using <a href="https://talk.peercoin.net/">Peercoin</a> today!</p>
+							<p>Be your own bank, take control of your own money and start using <a href="https://www.sparklecoin.com/">Sparklecoin</a> today!</p>
 							<p><a class="btn btn-primary btn-lg" href="#newAddress" role="button">Create new address &raquo;</a></p>
 						</div>
 
@@ -140,7 +140,7 @@
 
 							<div class="col-md-4">
 								<h3><span class="glyphicon glyphicon-wrench"></span>  Development</h3>
-								<p>Use what we've built to write your own projects! See our documention (coming soon), or contribute at <a href="https://github.com/ttutdxh-nubits/cointoolkit">github</a>.</p>
+								<p>Use what we've built to write your own projects! See our documention (coming soon), or contribute at <a href="https://github.com/sparklecoin/cointoolkit">github</a>.</p>
 							</div>
 						</div>
 					</div>
@@ -1194,7 +1194,7 @@
 
 					<div class="tab-pane tab-content" id="about">
 						<h2>About <small>open source toolkit</small></h2>
-						<p>Github <a href="https://github.com/ttutdxh-nubits/cointoolkit">https://github.com/ttutdxh-nubits/cointoolkit</a></p>
+						<p>Github <a href="https://github.com/sparklecoin/cointoolkit">https://github.com/sparklecoin/cointoolkit</a></p>
 						<h3>What is Bitcoin?</h3>
 						<p>Bitcoin is a type of digital currency in which encryption techniques are used to regulate the generation of units of currency and verify the transfer of funds, operating independently of a central bank. See <a href="http://www.weusecoins.com/" target="_blank">weusecoins.com</a> for more information.</p>
 						<p>If you are looking to buy some Bitcoin try <a href="https://localbitcoins.com/?ch=4g53" target="_blank">LocalBitcoins.com</a>.</p>
@@ -1202,7 +1202,7 @@
 						<h3>Information</h3>
 						<p>Cointoolkit is a free and open source project released under the MIT license, originally released by <a href="https://bitcointalk.org/index.php?action=profile;u=34834" target="_blank">OutCast3k</a> as Coinb.in in 2013, and modified to work with Peershares assets by ttutdxh.nubits@gmail.com</p>
 						<h3>Donate</h3>
-						<p>Please donate <a onclick="$('#verifyScript').val('02113443efda4a9fe9bd38ca1f932aaee2c3cb6ee637f22eaa25af370a1cde6952');$('#verifyBtn').click();" href="#verify">here</a> if you found this project useful or want to see more features!</p>
+						<p>Please donate <a onclick="$('#verifyScript').val('02be1bddb4fbeb12db49d6ca5fb70a5e99936352647f1a9c4c4af4b091dfbc39f7');$('#verifyBtn').click();" href="#verify">here</a> if you found this project useful or want to see more features!</p>
 					</div>
 
 					<div class="tab-pane tab-content" id="settings">
@@ -1215,8 +1215,8 @@
 								<p class="text-muted">Select which network you'd like to use for key pair generation.</p>
 								<select class="form-control" id="coinjs_coin">
 									<!-- pubPrefix, scriptPrefix, privPrefix, hdPubPrefix, hdPrivPrefix, broadcastProvider, unspentProvider, getInputAmountProvider, extraTimeField, extraUnitFieldValue, decimalPlaces, symbol, bip44 -->
+									<option value="sparklecoin" rel="0x3f;0x7d;0xbf;0x0488b21e;0x0488ade4;true;true;true;true;false;6;SPRK;0x6;">Sparklecoin</option>
 									<option value="peercoin" rel="0x37;0x75;0xb7;0x0488b21e;0x0488ade4;false;false;false;true;false;6;PPC;0x6;">Peercoin</option>
-									<option value="sparklecoin" rel="0x3f;0x7d;0xbf;0x0488b21e;0x0488ade4;false;false;false;true;false;6;SPRK;0x6;">Sparklecoin</option>
 									<option value="nubits" rel="0x19;0x1a;0x96;0x0488b21e;0x0488ade4;false;false;false;true;0x42;4;NBT;0xc;">NuBits</option>
 									<option value="nushares" rel="0x3f;0x40;0x95;0x0488b21e;0x0488ade4;false;false;false;true;0x53;4;NSR;0xb;">NuShares</option>
 									<option value="blockcredits" rel="0x1c;0x1e;0x9a;0x0488b21e;0x0488ade4;false;false;false;true;0x43;4;BKC;0x0;">BlockCredits</option>
@@ -1224,7 +1224,7 @@
 
 									<option value="bitcoin" rel="0x00;0x05;0x80;0x0488b21e;0x0488ade4;false;blockr_io;blockr_io;false;false;8;BTC;0x0;">Bitcoin</option>
 									<option value="peercoin_testnet" rel="0x6f;0xc4;0xef;0x043587cf;0x04358394;false;false;false;true;false;6;tPPC;0x1;">Peercoin (testnet)</option>
-									<option value="sparklecoin_testnet" rel="0x7f;0xc4;0xff;0x043587cf;0x04358394;false;false;false;true;false;6;tSPRK;0x1;">Sparklecoin (testnet)</option>
+									<option value="sparklecoin_testnet" rel="0x7f;0xc4;0xff;0x043587cf;0x04358394;true;true;true;true;false;6;tSPRK;0x1;">Sparklecoin (testnet)</option>
 									<option value="nubits_testnet" rel="0x55;0x56;0xe0;0x043587cf;0x04358394;false;false;false;true;0x42;4;tNBT;0x1;">NuBits (testnet)</option>
 									<option value="nushares_testnet" rel="0x7d;0x7e;0xdf;0x043587cf;0x04358394;false;false;false;true;0x53;4;tNSR;0x1;">NuShares (testnet)</option>
 									<option value="blockcredits_testnet" rel="0x57;0x5a;0xe4;0x043587cf;0x04358394;false;false;false;true;0x43;4;tBKC;0x1;">BlockCredits (testnet)</option>
@@ -1351,7 +1351,7 @@
 					</div>
 
 					<br>
-					<p class="text-muted">This page uses javascript to generate your addresses and sign your transactions within your browser, this means we <i>never</i> receive your private keys, this can be independently verified by reviewing the source code on <a href="https://github.com/ttutdxh-nubits/cointoolkit" target="_blank">github</a>. You can even <a href="https://github.com/ttutdxh-nubits/cointoolkit/archive/gh-pages.zip">download</a> this page and host it yourself or run it offline!</p>
+					<p class="text-muted">This page uses javascript to generate your addresses and sign your transactions within your browser, this means we <i>never</i> receive your private keys, this can be independently verified by reviewing the source code on <a href="https://github.com/sparklecoin/cointoolkit" target="_blank">github</a>. You can even <a href="https://github.com/sparklecoin/cointoolkit/archive/gh-pages.zip">download</a> this page and host it yourself or run it offline!</p>
 					<br>
 
 				</div>
@@ -1360,7 +1360,7 @@
 
 		<div id="footer">
 			<div class="container text-right">
-				<p class="text-muted">Donations accepted <a onclick="$('#verifyScript').val('02113443efda4a9fe9bd38ca1f932aaee2c3cb6ee637f22eaa25af370a1cde6952');$('#verifyBtn').click();" href="#verify">here</a></p>
+				<p class="text-muted">Donations accepted <a onclick="$('#verifyScript').val('02be1bddb4fbeb12db49d6ca5fb70a5e99936352647f1a9c4c4af4b091dfbc39f7');$('#verifyBtn').click();" href="#verify">here</a></p>
 			</div>
 		</div>
 
