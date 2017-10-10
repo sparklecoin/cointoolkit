@@ -211,6 +211,18 @@ $(document).ready(function() {
 				$("#signTransaction").val(decode.serialize()).fadeOut().fadeIn();
 				window.location.hash = "#sign";
 			});
+			$("#verifyTransactionData .verifyToLedgerSign").on( "click", function() {
+
+                //$("#verifyScript").val(coinjs.signTxn(6,0,0,decode.serialize())).fadeOut().fadeIn();
+
+                getLedgerSignatures(6,0,0,decode.serialize(), function(result) {
+                    console.log("returned", result);
+                    });
+
+                //$("#verifyScript").val(coinjs.signTxn(6,0,0,12)).fadeOut().fadeIn();
+                //window.location.hash = "#verify";
+			});
+
 			$("#verifyTransactionData .verifyToBroadcast").on( "click", function() {
 				$("#broadcast #rawTransaction").val(decode.serialize()).fadeOut().fadeIn();
 				window.location.hash = "#broadcast";
@@ -580,7 +592,53 @@ $(document).ready(function() {
 		}
 		return r;
 	}
-	
+
+
+    /* ledger */
+
+    function getLedgerAddress(coinid,accountid,addressid,callback) {
+        coinjs.comm.create_async(0, true).then(function(comm) {
+
+            var btc = new ledger.btc(comm);
+            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/" + addressid.toString() + "/0"
+
+            btc.getWalletPublicKey_async(path).then(function(result) {
+                callback(result);
+            }).fail(function(ex) {console.log(path,ex);});
+        }).fail(function(ex) {console.log(ex);});
+    }
+
+    function getLedgerSignatures(coinid,accountid,addressid,rawtransaction,callback) {
+        coinjs.comm.create_async(0, true).then(function(comm) {
+
+            var btc = new ledger.btc(comm);
+            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/" + addressid.toString() + "/0"
+
+            btc.getWalletPublicKey_async(path).then(function(result) {
+                publicKey = result.publicKey;
+                var txn = btc.splitTransaction(rawtransaction,1);
+
+                var inputs = [];
+
+                for (var i = 0; i < txn.inputs.length; i++) {
+                    var current = [];
+                    var input = txn.inputs[i];
+                    // fetch and split raw txn
+                    var rawtxn = "010000006676dc5903cc138f16170433bca88f35f974f2fdf8261c0c06fc4b763f820fef29014a6f7b000000006b48304502202a3bcb650364410576b6b49c3552f00a1d6b6fb39678a4bc209dfd247230e155022100e24b77c0460b6b42cc9a6858cff6fe81723c7356c2fa79fe1f2e8b949dfbd3ef01210209526950462e5eb32e2b78a39bdd49a056fe8cf6c984a6f15a21b1dac45428a4ffffffffbe72a30beef7e6a452a1b75f395b22e394e0f911f94fe52086f1073771bcf094050000006b483045022100a99e6ca2e7b718448099676cd9639ccc235df2ba7960cf7bb65d313e7b7d627802202fcaab799977c55a01123a0fb980bde6c7188e7e4a7455c7c97c296018dd1ff8012102ff040d4a77b3100e8592016c7ee2b5559a7b5c393ba9c9ef70edd2582795d361ffffffff876cc16cbb55e88dece9df3889066a8155cf52961403fd79c4a659ad3e06bcf0000000006b483045022042272c9bf73bc731f21d7ec49fc22909faba3e42fe7f5aa7ec21e7574c84038b022100c997348dff9d34098a90f94b34f7148f6ca1f9472aac94f711cddd97529b9fdf0121023bc2656cf3f7f516602599a06c8347ecd3d23fb8dcda65c40439fd43c26ab0a2ffffffff014ace0000000000001976a91465c2553cb76035f4278b7e6c69ce13ed618673ab88ac00000000";
+                    current.push(btc.splitTransaction(rawtxn,1));
+                    current.push(new Uint32Array(input.prevout.slice(32))[0])
+                    current.push(Crypto.util.bytesToHex(input.script))
+                    inputs.push(current);
+                    }
+
+                var outputsBuffer = Crypto.util.bytesToHex(btc.serializeTransactionOutputs(txn));
+
+                btc.signP2SHTransaction_async(inputs, [path], outputsBuffer, undefined, undefined, 1).then(function(result) {
+                    callback({"publicKey":publicKey,"signatures":result});
+                    }).fail(function(ex) {console.log(ex);});
+            }).fail(function(ex) {console.log(path,ex);});
+        }).fail(function(ex) {console.log(ex);});
+    }	
 	/* external providers */
 		
 	var mercatorBasedExplorer = {
