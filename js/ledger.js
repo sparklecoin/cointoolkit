@@ -9603,7 +9603,7 @@ LedgerBtc.prototype.getWalletPublicKey_async = function(path) {
 		response = Buffer.from(response, 'hex');
 		var publicKeyLength = response[0];
 		var addressLength = response[1 + publicKeyLength];
-		result['publicKey'] = response.slice(1, 1 + publicKeyLength).toString('hex');
+		result['publicKey'] = self.compressPublicKey(response.slice(1, 1 + publicKeyLength)).toString('hex');
 		result['bitcoinAddress'] = response.slice(1 + publicKeyLength + 1, 1 + publicKeyLength + 1 + addressLength).toString('ascii');
 		result['chainCode'] = response.slice(1 + publicKeyLength + 1 + addressLength, 1 + publicKeyLength + 1 + addressLength + 32).toString('hex');
 		return result;
@@ -9960,8 +9960,8 @@ LedgerBtc.prototype.createPaymentTransactionNew_async = function(inputs, associa
 	var nullScript = Buffer.alloc(0);
 	var defaultVersion = Buffer.alloc(4);	
 	defaultVersion.writeUInt32LE(1, 0);
-    var defaultTime = Buffer.alloc(4);
-    defaultTime.writeUInt32LE(Date.now() / 1000 | 0, 0);
+	var defaultTime = Buffer.alloc(4);
+	defaultTime.writeUInt32LE(Date.now() / 1000 | 0, 0);
 	var trustedInputs = [];
 	var regularOutputs = [];
 	var signatures = [];
@@ -10090,14 +10090,13 @@ LedgerBtc.prototype.createPaymentTransactionNew_async = function(inputs, associa
 	return deferred.promise;
 }
 
-LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeysets, outputScript, lockTime, sigHashType, isPeercoin) {
+LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeysets, outputScript, lockTime, sigHashType, timeStamp) {
 	// Inputs are provided as arrays of [transaction, output_index, redeem script, optional sequence]
 	// associatedKeysets are provided as arrays of [path]	
 	var nullScript = Buffer.alloc(0);
 	var defaultVersion = Buffer.alloc(4);	
 	defaultVersion.writeUInt32LE(1, 0);
-    var defaultTime = Buffer.alloc(4);
-    defaultTime.writeUInt32LE(Date.now()/1000 | 0, 0)
+	var defaultTime = Buffer.alloc(4);
 	var trustedInputs = [];
 	var regularOutputs = [];
 	var signatures = [];
@@ -10106,6 +10105,7 @@ LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeyse
 	var resuming = false;
 	var self = this;
 	var targetTransaction = {};
+	var isPeercoin = 0;
 
 	outputScript = Buffer.from(outputScript, 'hex');
 
@@ -10115,8 +10115,13 @@ LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeyse
 	if (typeof sigHashType == "undefined") {
 		sigHashType = LedgerBtc.SIGHASH_ALL;
 	}	
-    if (typeof isPeercoin == "undefined") {
-        isPeercoin = 0;
+
+    if (typeof timeStamp == "undefined") {
+        defaultTime.writeUInt32LE(0, 0);
+    }
+    else {
+        defaultTime.writeUInt32LE(timeStamp, 0)
+        isPeercoin = 1;
     }
 
 	var deferred = Q.defer();
@@ -10170,7 +10175,7 @@ LedgerBtc.prototype.signP2SHTransaction_async = function(inputs, associatedKeyse
 					return self.hashOutputFull_async(outputScript);
 				}).then (function (resultHash) {
 					return self.signTransaction_async(associatedKeysets[i], lockTime, sigHashType).then(function (signature) {
-						signatures.push(signature.slice(0, signature.length - 1).toString('hex'));
+						signatures.push(signature.toString('hex'));
 						targetTransaction['inputs'][i]['script'] = nullScript;
 						if (firstRun) {
 							firstRun = false;
