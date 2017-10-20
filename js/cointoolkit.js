@@ -207,23 +207,25 @@ $(document).ready(function() {
 			$("#verifyTransactionData .transactionSize").html(decode.size()+' <i>bytes</i>');
 			$("#verifyTransactionData .transactionLockTime").html((decode['lock_time'] >= 500000000)?new Date(decode['nTime']*1000).toUTCString():"Block height "+decode['lock_time']);
 			$("#verifyTransactionData .transactionUnit").html(String.fromCharCode(decode['nUnit']));
-			$("#verifyTransactionData .verifyToSign").on( "click", function() {
+			$("#verifyTransactionData .verifyToSign").off().on( "click", function() {
 				$("#signTransaction").val(decode.serialize()).fadeOut().fadeIn();
 				window.location.hash = "#sign";
 			});
-			$("#verifyTransactionData .verifyToLedgerSign").on( "click", function() {
+			$("#verifyTransactionData .verifyToLedgerSign").off().on( "click", function() {
 
-                //$("#verifyScript").val(coinjs.signTxn(6,0,0,decode.serialize())).fadeOut().fadeIn();
+                //$("#verifyScript").val(coinjs.signTxn(6,0,0,decode).fadeOut().fadeIn();
 
-                getLedgerSignatures(6,0,0,decode.serialize(), function(result) {
-                    console.log("returned", result);
+                getLedgerSignatures(decode, function(result) {
+                    $("#verifyScript").val(result).fadeOut().fadeIn();
+                    window.location.hash = "#verify";
+                    $("#verifyBtn").click();
                     });
 
                 //$("#verifyScript").val(coinjs.signTxn(6,0,0,12)).fadeOut().fadeIn();
                 //window.location.hash = "#verify";
 			});
 
-			$("#verifyTransactionData .verifyToBroadcast").on( "click", function() {
+			$("#verifyTransactionData .verifyToBroadcast").off().on( "click", function() {
 				$("#broadcast #rawTransaction").val(decode.serialize()).fadeOut().fadeIn();
 				window.location.hash = "#broadcast";
 			});
@@ -596,11 +598,11 @@ $(document).ready(function() {
 
     /* ledger */
 
-    function getLedgerAddress(coinid,accountid,addressid,callback) {
+    function getLedgerAddress(callback) {
         coinjs.comm.create_async(0, true).then(function(comm) {
 
             var btc = new ledger.btc(comm);
-            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/" + addressid.toString() + "/0"
+            var path = coinjs.ledgerPath;
 
             btc.getWalletPublicKey_async(path).then(function(result) {
                 callback(result);
@@ -608,34 +610,76 @@ $(document).ready(function() {
         }).fail(function(ex) {console.log(ex);});
     }
 
-    function getLedgerSignatures(coinid,accountid,addressid,rawtransaction,callback) {
+    function getLedgerSignatures(currenttransaction,callback) {
         coinjs.comm.create_async(0, true).then(function(comm) {
 
             var btc = new ledger.btc(comm);
-            var path = "44'/" + coinid.toString() + "'/" + accountid.toString() + "'/" + addressid.toString() + "/0"
+            var path = coinjs.ledgerPath;
 
             btc.getWalletPublicKey_async(path).then(function(result) {
                 publicKey = result.publicKey;
-                var txn = btc.splitTransaction(rawtransaction,1);
+                var txn = btc.splitTransaction(currenttransaction.serialize(),1);
+
+                var outputsBuffer = Crypto.util.bytesToHex(btc.serializeTransactionOutputs(txn));
 
                 var inputs = [];
+                var paths = [];
 
+/*
                 for (var i = 0; i < txn.inputs.length; i++) {
                     var current = [];
                     var input = txn.inputs[i];
                     // fetch and split raw txn
                     var rawtxn = "010000006676dc5903cc138f16170433bca88f35f974f2fdf8261c0c06fc4b763f820fef29014a6f7b000000006b48304502202a3bcb650364410576b6b49c3552f00a1d6b6fb39678a4bc209dfd247230e155022100e24b77c0460b6b42cc9a6858cff6fe81723c7356c2fa79fe1f2e8b949dfbd3ef01210209526950462e5eb32e2b78a39bdd49a056fe8cf6c984a6f15a21b1dac45428a4ffffffffbe72a30beef7e6a452a1b75f395b22e394e0f911f94fe52086f1073771bcf094050000006b483045022100a99e6ca2e7b718448099676cd9639ccc235df2ba7960cf7bb65d313e7b7d627802202fcaab799977c55a01123a0fb980bde6c7188e7e4a7455c7c97c296018dd1ff8012102ff040d4a77b3100e8592016c7ee2b5559a7b5c393ba9c9ef70edd2582795d361ffffffff876cc16cbb55e88dece9df3889066a8155cf52961403fd79c4a659ad3e06bcf0000000006b483045022042272c9bf73bc731f21d7ec49fc22909faba3e42fe7f5aa7ec21e7574c84038b022100c997348dff9d34098a90f94b34f7148f6ca1f9472aac94f711cddd97529b9fdf0121023bc2656cf3f7f516602599a06c8347ecd3d23fb8dcda65c40439fd43c26ab0a2ffffffff014ace0000000000001976a91465c2553cb76035f4278b7e6c69ce13ed618673ab88ac00000000";
                     current.push(btc.splitTransaction(rawtxn,1));
-                    current.push(new Uint32Array(input.prevout.slice(32))[0])
-                    current.push(Crypto.util.bytesToHex(input.script))
+                    current.push(currenttransaction.ins[i].outpoint.index);
+                    //current.push(new Uint32Array(input.prevout.slice(32))[0])
+                    //current.push(Crypto.util.bytesToHex(input.script))
                     inputs.push(current);
                     }
+*/
+                // TODO: check if gettransaction is available
+                for (var i = 0; i < currenttransaction.ins.length; i++) {
+                    var result = providers[$("#coinSelector").val()].getTransaction[toolkit.getTransaction](currenttransaction.ins[i].outpoint.hash,i,function(result) {
+                        inputs.push([btc.splitTransaction(result[0],1),currenttransaction.ins[result[1]].outpoint.index,Crypto.util.bytesToHex(currenttransaction.ins[0].script.buffer)]);
+                        paths.push(path);
+                        if (inputs.length == currenttransaction.ins.length) {
+                            // we are ready
+                 
+                            console.log("raw inputs:",inputs);
 
-                var outputsBuffer = Crypto.util.bytesToHex(btc.serializeTransactionOutputs(txn));
+                            if (currenttransaction.ins[0].script.buffer.slice(-1) == coinjs.opcode.OP_CHECKMULTISIG) {
+                                btc.signP2SHTransaction_async(inputs, paths, outputsBuffer, undefined, undefined, currenttransaction.nTime).then(function(result) {
+                                    // 
+                                    $.each(result, function(idx,itm) {
+                                        currenttransaction.addsignaturemultisig(idx,itm);
+                                        });
+                                    callback(currenttransaction.serialize());
+                                    }).fail(function(ex) {console.log(ex);});
+                                }
+                            else {
+                                btc.createPaymentTransactionNew_async(inputs, paths, undefined, outputsBuffer, undefined, undefined, 1).then(function(result) {
+                                    callback(result);
+                                    }).fail(function(ex) {console.log(ex);});
+                                }
+                            }
+                        });
+                    }
 
-                btc.signP2SHTransaction_async(inputs, [path], outputsBuffer, undefined, undefined, 1).then(function(result) {
-                    callback({"publicKey":publicKey,"signatures":result});
+
+
+/*
+                btc.signP4SHTransaction_async(inputs, [path], outputsBuffer, undefined, undefined, 1).then(function(result) {
+                    for (var i = 0; i < txn.inputs.length; i++) {
+                        var s = coinjs.script();
+                        s.writeBytes(Crypto.util.hexToBytes(result[i]));
+                        s.writeBytes(Crypto.util.hexToBytes(publicKey));
+
+                        currenttransaction.ins[i].script = s;
+                        }
+                    callback(currenttransaction.serialize());
                     }).fail(function(ex) {console.log(ex);});
+*/
             }).fail(function(ex) {console.log(path,ex);});
         }).fail(function(ex) {console.log(ex);});
     }	
@@ -777,6 +821,35 @@ $(document).ready(function() {
                 });
 			}
 		},
+        getTransaction: function(endpoint) {
+            return function(txid, index, callback){
+                                   var msgSucess = '<span class="glyphicon glyphicon-info-sign"></span> Retrieved transaction info from txid <a href="' + endpoint + '/ext/txinfo/'+txid+'" target="_blank">'+txid+'</a>'
+                                   var msgError = '<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs! Is <a href="' + endpoint + '/">' + endpoint + '/</a> down?';
+                    $.ajax ({
+                        type: "GET",
+                        url: "" + endpoint + "/api/getrawtransaction?txid="+txid,
+                        dataType: "text",
+                        error: function(data) {
+                            $("#redeemFromStatus").removeClass('hidden').html(msgError);
+                            $("#redeemFromBtn").html("Load").attr('disabled',false);
+                        },
+                        success: function(data) {
+                            if (coinjs.debug) {console.log(data)};
+                            if (data){
+                                callback([data,index]);
+                            } else {
+                                $("#redeemFromStatus").removeClass('hidden').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve transation info');
+                                callback(false);
+                            }
+                        }
+//,
+//                        complete: function(data, status) {
+//                            $("#redeemFromBtn").html("Load").attr('disabled',false);
+//                            totalInputAmount();
+//                        }
+                    });
+                }
+            },
 		getInputAmount: function(endpoint) {
 			return function(txid, index, callback) {
 	 			$.ajax ({
@@ -1439,24 +1512,30 @@ var bcBasedExplorer = {
 				}
 			}
 		},
-    sparklecoin: {
+        sparklecoin: {
 			listUnspent: {
                 "iquidus": sparkleBasedExplorer.listUnspent('https://explorer.sparklecoin.com')
 			},
 			broadcast: {
                 "iquidus": sparkleBasedExplorer.broadcast('https://explorer.sparklecoin.com')
 			},
+            getTransaction: {
+                "iquidus": sparkleBasedExplorer.getTransaction('https://explorer.sparklecoin.com')
+            },
 			getInputAmount: {
                 "iquidus": sparkleBasedExplorer.getInputAmount('https://explorer.sparklecoin.com')
 			}
 		},
-    sparklecoin_testnet: {
+        sparklecoin_testnet: {
 			listUnspent: {
                 "iquidus": sparkleBasedExplorer.listUnspent('https://tseed.sparklecoin.com')
 			},
 			broadcast: {
                 "iquidus": sparkleBasedExplorer.broadcast('https://tseed.sparklecoin.com')
 			},
+            getTransaction: {
+                "iquidus": sparkleBasedExplorer.getInputAmount('https://tseed.sparklecoin.com')
+            },
 			getInputAmount: {
                 "iquidus": sparkleBasedExplorer.getInputAmount('https://tseed.sparklecoin.com')
 			}
@@ -1777,6 +1856,15 @@ var bcBasedExplorer = {
 
 		/* new -> address code */
 
+    $("#ledgerKeysBtn").click(function(){
+       getLedgerAddress(function(result) {
+            console.log("address:",coinjs.ledgerPath,result);
+            $("#newGeneratedAddress").val(result.bitcoinAddress);
+            
+            $("#newPubKey").val(coinjs.pubkeycompress(result.publicKey));
+            }); 
+    });
+
 	$("#newKeysBtn").click(function(){
 		coinjs.compressed = false;
 		if($("#newCompressed").is(":checked")){
@@ -1865,7 +1953,6 @@ var bcBasedExplorer = {
 		   return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
 		})
 		$.each(listitems, function(idx, itm) {
-			console.log(itm);
 			mylist.append(itm);
 		});
 		$("#multiSigData").addClass("hidden");
@@ -2060,6 +2147,11 @@ var bcBasedExplorer = {
 			$("#transactionCreate .transactionToSign").on( "click", function() {
 				$("#signTransaction").val(tx.serialize()).fadeOut().fadeIn();;
 				window.location.hash = "#sign";
+			});
+
+			$("#transactionCreate .transactionToVerify").on( "click", function() {
+				$("#verifyScript").val(tx.serialize()).fadeOut().fadeIn();;
+				window.location.hash = "#verify";
 			});
 
 			$("#transactionCreate").removeClass("hidden");
@@ -2312,11 +2404,13 @@ var bcBasedExplorer = {
 
 			coinjs.symbol = $("#coinjs_symbol").val();
 			coinjs.bip44 = $("#coinjs_bip44").val()*1;
+            coinjs.ledgerPath = $("#coinjs_ledger").val();
 			
 			$("#rawSubmitBtn").attr('rel',$("#coinjs_broadcast option:selected").val());
 			$("#redeemFromBtn").attr('rel',$("#coinjs_utxo option:selected").val());
 			
 			toolkit.getInputAmount = $("#coinjs_getinputamount option:selected").val();
+            toolkit.getTransaction = $("#coinjs_gettransaction option:selected").val();
 			
 			$("#coinSelector").val($("#coinjs_coin").val());
 
@@ -2351,6 +2445,7 @@ var bcBasedExplorer = {
 		var mode = this.options[this.selectedIndex].value;
 		
 		var walletAvailableUnspent = false;
+ 		var walletAvailableTransaction = false;
 		var walletAvailableBroadcast = false;
 		
 		// deal with listUnspent settings`
@@ -2376,6 +2471,30 @@ var bcBasedExplorer = {
 			
 			$("#redeemFrom").val("Loading of address inputs is currently not available for " + this.options[ this.selectedIndex ].text);
 		}
+
+        // deal with get transaction
+
+        $('#coinjs_gettransaction').empty();
+               if(typeof(providers[mode]) == 'object' && typeof(providers[mode].getTransaction) == 'object' && Object.keys(providers[mode].getTransaction).length > 0){
+                       $.each(providers[mode].getTransaction, function(key) {
+                               $('#coinjs_gettransaction').append($('<option>', {
+                                       value: key,
+                                       text: key
+                               }));
+                       });
+
+                       $("#coinjs_gettransaction").attr('disabled',false);
+                       $("#coinjs_gettransaciton").val(o[8]);
+
+                       // $("#redeemFr").val("");
+
+                       walletAvailableTransaction = true;
+               } else {
+                       $("#coinjs_gettransaction").attr('disabled',true);
+                       $("#coinjs_gettransaction").append('<option value="disabled">Currently not available for ' + this.options[ this.selectedIndex ].text+'</option>').val("disabled");
+
+                       // $("#redeemFrom").val("Loading of address inputs is currently not available for " + this.options[ this.selectedIndex ].text);
+               }
 		
 		// deal with input amount settings
 		$('#coinjs_getinputamount').empty();
@@ -2428,14 +2547,16 @@ var bcBasedExplorer = {
 		$("#coinjs_hdpub").val(o[3]);
 		$("#coinjs_hdprv").val(o[4]);
 		
-		$("#coinjs_extratimefield").val(o[8]);
-		$("#coinjs_extraunitfieldvalue").val(o[9]);
+		$("#coinjs_extratimefield").val(o[9]);
+		$("#coinjs_extraunitfieldvalue").val(o[10]);
 		
-		$("#coinjs_decimalplaces").val(o[10]);
+		$("#coinjs_decimalplaces").val(o[11]);
 
-		$("#coinjs_symbol").val(o[11]);
+		$("#coinjs_symbol").val(o[12]);
 
-		$("#coinjs_bip44").val(o[12]);
+		$("#coinjs_bip44").val(o[13]);
+
+        $("#coinjs_ledger").val(o[14]);
 
 
 		// hide/show custom screen
@@ -2561,7 +2682,7 @@ var bcBasedExplorer = {
 
 	$('a[data-toggle="tab"]').on('click', function(e) {
 		e.preventDefault();
-		if(e.target){
+		if(e.target && $(e.target).attr('href')){
 			history.pushState(null, null, '#'+$(e.target).attr('href').substr(1));
 		}
 	});

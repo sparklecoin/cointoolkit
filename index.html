@@ -341,7 +341,9 @@
 
 						</div>
 
+
 						<input type="button" class="btn btn-primary" value="Generate" id="newKeysBtn">
+						<input type="button" class="btn btn-primary" value="FromLedger" id="ledgerKeysBtn">
 						<br>
 					</div>
 
@@ -654,6 +656,11 @@
 									<p class="text-muted" style="float:left;">Size: <span class="txSize">0</span> <i>bytes</i></p>
 									<div style="float:right;margin-top: 10px;">
 										If you are sure:
+										<button class="btn btn-info transactionToVerify" type="button">
+											Continue to Verify
+											<span class="glyphicon glyphicon-pencil"></span>
+										</button>
+                                        Or
 										<button class="btn btn-info transactionToSign" type="button">
 											Continue to Sign
 											<span class="glyphicon glyphicon-pencil"></span>
@@ -838,6 +845,11 @@
 									<p class="text-muted" style="float:left;">Size: <span class="txSize">0</span> <i>bytes</i></p>
 									<div style="float:right;margin-top: 10px;">
 										If you are sure:
+										<button class="btn btn-info transactionToVerify" type="button">
+											Continue to Verify
+											<span class="glyphicon glyphicon-pencil"></span>
+										</button>
+                                        Or
 										<button class="btn btn-info transactionToSign" type="button">
 											Continue to Sign
 											<span class="glyphicon glyphicon-pencil"></span>
@@ -1219,27 +1231,27 @@
 								<b>Network</b>: <br>
 								<p class="text-muted">Select which network you'd like to use for key pair generation.</p>
 								<select class="form-control" id="coinjs_coin">
-									<!-- pubPrefix, scriptPrefix, privPrefix, hdPubPrefix, hdPrivPrefix, broadcastProvider, unspentProvider, getInputAmountProvider, extraTimeField, extraUnitFieldValue, decimalPlaces, symbol, bip44 -->
-									<option value="sparklecoin" rel="0x3f;0x7d;0xbf;0x0488b21e;0x0488ade4;true;true;true;true;false;6;SPRK;0x6;">Sparklecoin</option>
-									<option value="peercoin" rel="0x37;0x75;0xb7;0x0488b21e;0x0488ade4;false;false;false;true;false;6;PPC;0x6;">Peercoin</option>
-									<option value="nubits" rel="0x19;0x1a;0x96;0x0488b21e;0x0488ade4;false;false;false;true;0x42;4;NBT;0xc;">NuBits</option>
-									<option value="nushares" rel="0x3f;0x40;0x95;0x0488b21e;0x0488ade4;false;false;false;true;0x53;4;NSR;0xb;">NuShares</option>
-									<option value="blockcredits" rel="0x1c;0x1e;0x9a;0x0488b21e;0x0488ade4;false;false;false;true;0x43;4;BKC;0x0;">BlockCredits</option>
-									<option value="blockshares" rel="0x12;0x14;0x99;0x0488b21e;0x0488ade4;false;false;false;true;0x38;4;BKS;0x0;">BlockShares</option>
+									<!-- pubPrefix, scriptPrefix, privPrefix, hdPubPrefix, hdPrivPrefix, broadcastProvider, unspentProvider, getInputAmountProvider, getTransaction, extraTimeField, extraUnitFieldValue, decimalPlaces, symbol, bip44, ledgerPath -->
+									<option value="sparklecoin" rel="0x3f;0x7d;0xbf;0x0488b21e;0x0488ade4;true;true;true;true;true;false;6;SPRK;0x6;44'/239'/0'/0/0;">Sparklecoin</option>
+									<option value="peercoin" rel="0x37;0x75;0xb7;0x0488b21e;0x0488ade4;false;false;false;true;holy;false;6;PPC;0x6;44'/6'/0'/0/0;">Peercoin</option>
+									<option value="nubits" rel="0x19;0x1a;0x96;0x0488b21e;0x0488ade4;false;false;false;false;true;0x42;4;NBT;0xc;;">NuBits</option>
+									<option value="nushares" rel="0x3f;0x40;0x95;0x0488b21e;0x0488ade4;false;false;false;false;true;0x53;4;NSR;0xb;;">NuShares</option>
+									<option value="blockcredits" rel="0x1c;0x1e;0x9a;0x0488b21e;0x0488ade4;false;false;false;false;true;0x43;4;BKC;0x0;;">BlockCredits</option>
+									<option value="blockshares" rel="0x12;0x14;0x99;0x0488b21e;0x0488ade4;false;false;false;false;true;0x38;4;BKS;0x0;;">BlockShares</option>
 
-									<option value="bitcoin" rel="0x00;0x05;0x80;0x0488b21e;0x0488ade4;false;blockr_io;blockr_io;false;false;8;BTC;0x0;">Bitcoin</option>
-									<option value="peercoin_testnet" rel="0x6f;0xc4;0xef;0x043587cf;0x04358394;false;false;false;true;false;6;tPPC;0x1;">Peercoin (testnet)</option>
-									<option value="sparklecoin_testnet" rel="0x7f;0xc4;0xff;0x043587cf;0x04358394;true;true;true;true;false;6;tSPRK;0x1;">Sparklecoin (testnet)</option>
-									<option value="nubits_testnet" rel="0x55;0x56;0xe0;0x043587cf;0x04358394;false;false;false;true;0x42;4;tNBT;0x1;">NuBits (testnet)</option>
-									<option value="nushares_testnet" rel="0x7d;0x7e;0xdf;0x043587cf;0x04358394;false;false;false;true;0x53;4;tNSR;0x1;">NuShares (testnet)</option>
-									<option value="blockcredits_testnet" rel="0x57;0x5a;0xe4;0x043587cf;0x04358394;false;false;false;true;0x43;4;tBKC;0x1;">BlockCredits (testnet)</option>
-									<option value="blockshares_testnet" rel="0x7f;0x82;0xe3;0x043587cf;0x04358394;false;false;false;true;0x38;4;tBKS;0x1;">BlockShares (testnet)</option>
-									<option value="bitcoin_testnet" rel="0x6f;0xc4;0xef;0x043587cf;0x04358394;false;blockrio_bitcointestnet;false;false;false;8;tBTC;0x1;">Bitcoin (testnet)</option>
+									<option value="bitcoin" rel="0x00;0x05;0x80;0x0488b21e;0x0488ade4;false;blockr_io;blockr_io;false;false;false;8;BTC;0x0;44'/0'/0'/0/0;">Bitcoin</option>
+									<option value="peercoin_testnet" rel="0x6f;0xc4;0xef;0x043587cf;0x04358394;false;false;false;true;true;false;6;tPPC;0x1;;">Peercoin (testnet)</option>
+									<option value="sparklecoin_testnet" rel="0x7f;0xc4;0xff;0x043587cf;0x04358394;true;true;true;true;true;false;6;tSPRK;0x1;;">Sparklecoin (testnet)</option>
+									<option value="nubits_testnet" rel="0x55;0x56;0xe0;0x043587cf;0x04358394;false;false;false;false;true;0x42;4;tNBT;0x1;;">NuBits (testnet)</option>
+									<option value="nushares_testnet" rel="0x7d;0x7e;0xdf;0x043587cf;0x04358394;false;false;false;false;true;0x53;4;tNSR;0x1;;">NuShares (testnet)</option>
+									<option value="blockcredits_testnet" rel="0x57;0x5a;0xe4;0x043587cf;0x04358394;false;false;false;false;true;0x43;4;tBKC;0x1;;">BlockCredits (testnet)</option>
+									<option value="blockshares_testnet" rel="0x7f;0x82;0xe3;0x043587cf;0x04358394;false;false;false;false;true;0x38;4;tBKS;0x1;;">BlockShares (testnet)</option>
+									<option value="bitcoin_testnet" rel="0x6f;0xc4;0xef;0x043587cf;0x04358394;false;blockrio_bitcointestnet;false;false;false;false;8;tBTC;0x1;;">Bitcoin (testnet)</option>
 									
-									<option value="peershares_default" rel="0x3f;0x7d;0xbf;0x0488b21e;0x0488ade4;false;false;false;true;0x53;4;PSR;0x0;">Peershares default</option>
-									<option value="peershares_default_test" rel="0x20;0xd4;0xa0;0x043587cf;0x04358394;false;false;false;true;0x53;4;tPSR;0x1;">Peershares default (testnet)</option>
+									<option value="peershares_default" rel="0x3f;0x7d;0xbf;0x0488b21e;0x0488ade4;false;false;false;true;0x53;4;PSR;0x0;;">Peershares default</option>
+									<option value="peershares_default_test" rel="0x20;0xd4;0xa0;0x043587cf;0x04358394;false;false;false;true;0x53;4;tPSR;0x1;;">Peershares default (testnet)</option>
 
-									<option value="custom" rel="0x00;0x05;0x80;0x0488b21e;0x0488ade4;false;false;false;false;false;8;CUSTOM;0x0;">Custom</option>
+									<option value="custom" rel="0x00;0x05;0x80;0x0488b21e;0x0488ade4;false;false;false;false;false;false;8;CUSTOM;0x0;;">Custom</option>
 								</select>
 							</div>
 						</div>
@@ -1336,6 +1348,18 @@
 							
 						<hr>
 
+					    <div class="row">
+							<div class="col-md-12">
+								<b>Raw transaction</b>: <br>
+								<p class="text-muted">Select the provider you wish to get transaction info from</p>
+								<select class="form-control" id="coinjs_gettransaction">
+
+								</select>
+							</div>
+						</div>
+							
+						<hr>
+
 						<div class="row">
 							<div class="col-md-12">
 								<b>Broadcast</b>: <br>
@@ -1345,6 +1369,17 @@
 								</select>
 							</div>
 						</div>
+
+						<hr>
+
+						<div class="row">
+							<div class="col-md-12">
+								<b>Ledger path</b>: <br>
+								<p class="text-muted">Select the ledger path you wish to use for address/transaction generation and signing</p>
+                                <input type="text" class="form-control" id="coinjs_ledger">
+							</div>
+						</div>
+
 
 						<br>
 

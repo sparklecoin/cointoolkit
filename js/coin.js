@@ -418,6 +418,28 @@
 		}
 	}
 
+    /* compress public key */
+    coinjs.pubkeycompress = function(pubkey) {
+        var curve = EllipticCurve.getSECCurveByName("secp256k1");
+        try {
+            var pt = curve.curve.decodePointHex(pubkey);
+            var x = pt.getX().toBigInteger();
+            var y = pt.getY().toBigInteger();
+
+            var publicKeyBytes = EllipticCurve.integerToBytes(x, 32);
+            if (y % 2) {
+                publicKeyBytes.unshift(0x02);
+                }
+            else {
+                publicKeyBytes.unshift(0x03);
+                }
+            return Crypto.util.bytesToHex(publicKeyBytes);
+        } catch (e) {
+            if (coinjs.debug) {console.log(e.stack)};
+            return false;
+        }
+    }
+
 	coinjs.testdeterministicK = function() {
 		// https://github.com/bitpay/bitcore/blob/9a5193d8e94b0bd5b8e7f00038e7c0b935405a03/test/crypto/ecdsa.js
 		// Line 21 and 22 specify digest hash and privkey for the first 2 test vectors.
@@ -1285,6 +1307,48 @@
 			this.ins[index].script = s;
 			return true;
 		}
+
+		/* sign a multisig input */
+		r.addsignaturemultisig = function(index, signature){
+			var redeemScript = this.extractRedeemScript(this.ins[index].script);
+            var sighash = Crypto.util.hexToBytes(this.transactionHash(index));
+			var newSignature = Crypto.util.hexToBytes(signature);
+			var s = coinjs.script();
+
+			s.writeOp(0);
+
+			if(this.ins[index].script.chunks[this.ins[index].script.chunks.length-1]==174){
+				s.writeBytes(newSignature);
+
+			}  else if (this.ins[index].script.chunks[0]==0 && this.ins[index].script.chunks[this.ins[index].script.chunks.length-1][this.ins[index].script.chunks[this.ins[index].script.chunks.length-1].length-1]==174){
+				var pubkeyList = this.scriptListPubkey(coinjs.script(redeemScript));
+				var sigsList = this.scriptListSigs(this.ins[index].script);
+				sigsList[sigsList.length] = newSignature;
+
+				var signatures = {};
+				var pubkey;
+				
+				for (var y = 0; y < sigsList.length; y++) {
+					pubkey = coinjs.verifySignature(sighash, sigsList[y], pubkeyList)
+					if(pubkey){
+						signatures[pubkey] = sigsList[y];
+					}
+				}
+
+				for (var i in pubkeyList) {
+					if (signatures[pubkeyList[i]]) {
+						s.writeBytes(signatures[pubkeyList[i]]);
+					}
+				}
+
+			}
+
+			s.writeBytes(redeemScript);
+			this.ins[index].script = s;
+			return true;
+		}
+
+
 		
 		r.listMultiSignature = function (index) {
 			var list = {};
