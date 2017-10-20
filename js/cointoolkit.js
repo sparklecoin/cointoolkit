@@ -639,9 +639,17 @@ $(document).ready(function() {
                     }
 */
                 // TODO: check if gettransaction is available
+
+                // extract script part
+                script = Crypto.util.bytesToHex(currenttransaction.ins[0].script.buffer);
+
+                if (currenttransaction.ins[0].script.buffer.slice(-1) == coinjs.opcode.OP_CHECKMULTISIG && currenttransaction.ins[0].script.chunks.slice(-1)[0] != coinjs.opcode.OP_CHECKMULTISIG) {
+                    script = Crypto.util.bytesToHex(currenttransaction.ins[0].script.chunks.slice(-1)[0]);
+                    }
+
                 for (var i = 0; i < currenttransaction.ins.length; i++) {
                     var result = providers[$("#coinSelector").val()].getTransaction[toolkit.getTransaction](currenttransaction.ins[i].outpoint.hash,i,function(result) {
-                        inputs.push([btc.splitTransaction(result[0],1),currenttransaction.ins[result[1]].outpoint.index,Crypto.util.bytesToHex(currenttransaction.ins[0].script.buffer)]);
+                        inputs.push([btc.splitTransaction(result[0],1),currenttransaction.ins[result[1]].outpoint.index,script]);
                         paths.push(path);
                         if (inputs.length == currenttransaction.ins.length) {
                             // we are ready
@@ -2152,6 +2160,7 @@ var bcBasedExplorer = {
 			$("#transactionCreate .transactionToVerify").on( "click", function() {
 				$("#verifyScript").val(tx.serialize()).fadeOut().fadeIn();;
 				window.location.hash = "#verify";
+                $("#verifyBtn").click();
 			});
 
 			$("#transactionCreate").removeClass("hidden");
