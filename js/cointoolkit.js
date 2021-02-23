@@ -789,6 +789,152 @@ $(document).ready(function() {
 	};
 
 
+	var electrumxBasedExplorer = {
+		listUnspent: function(endpoint) {
+			return function(redeem){
+				var oscript = coinjs.script().spendToScript(redeem.addr)
+				var scriptHash = Crypto.util.bytesToHex(
+					Crypto.SHA256(
+						oscript.buffer, 
+						{asBytes:1}
+					).reverse()
+				)
+				var msgSucess = '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="' + endpoint + '/ext/listunspent/'+redeem.addr+'" target="_blank">'+redeem.addr+'</a>'
+				var msgError = '<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs! Is <a href="' + endpoint + '/">' + endpoint + '/</a> down?';
+                $.ajax ({
+                    type: "GET",
+                    url: "" + endpoint + "/?method=blockchain.scripthash.listunspent&params[]="+scriptHash,
+                    dataType: "json",
+                    error: function(data) {
+                        $("#redeemFromStatus").removeClass('hidden').html(msgError);
+                        $("#redeemFromBtn").html("Load").attr('disabled',false);
+                    },
+                    success: function(data) {
+                        if (coinjs.debug) {console.log(data)};
+						if (data.error) {
+							$("#redeemFromStatus").removeClass('hidden').html(msgError);
+							$("#redeemFromBtn").html("Load").attr('disabled',false);
+							return;
+						}
+
+                        if ((data.result)){
+                            $("#redeemFromAddress").removeClass('hidden').html(
+                                '<span class="glyphicon glyphicon-info-sign"></span> Retrieved unspent inputs from address <a href="'+endpoint+'/ext/listunspent/'+
+                                redeem.addr+'" target="_blank">'+redeem.addr+'</a>');
+                            for(i = 0; i < data.result.length; ++i){
+                                var o = data.result[i];
+                                var tx = ""+o.tx_hash;
+                                if(tx.match(/^[a-f0-9]+$/)){
+                                    var n = o.tx_pos;
+                                    var script = (redeem.isMultisig==true) ? $("#redeemFrom").val() : Crypto.util.bytesToHex(oscript.buffer);
+                                    var amount = (o.value /1000000).toFixed(8);
+                                    addOutput(tx, n, script, amount);
+                                }
+                            }
+                        } else {
+                            $("#redeemFromStatus").removeClass('hidden').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs.');
+                        }
+                    },
+                    complete: function(data, status) {
+                        $("#redeemFromBtn").html("Load").attr('disabled',false);
+                        totalInputAmount();
+                    }
+                });
+			}
+		},
+        getTransaction: function(endpoint) {
+            return function(txid, index, callback){
+                                   var msgSucess = '<span class="glyphicon glyphicon-info-sign"></span> Retrieved transaction info from txid <a href="' + endpoint + '/ext/txinfo/'+txid+'" target="_blank">'+txid+'</a>'
+                                   var msgError = '<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve unspent outputs! Is <a href="' + endpoint + '/">' + endpoint + '/</a> down?';
+                    $.ajax ({
+                        type: "GET",
+                        url: "" + endpoint + "/?method=blockchain.transaction.get&params[]="+txid,
+                        dataType: "json",
+                        error: function(data) {
+                            $("#redeemFromStatus").removeClass('hidden').html(msgError);
+                            $("#redeemFromBtn").html("Load").attr('disabled',false);
+                        },
+                        success: function(data) {
+                            if (coinjs.debug) {console.log(data)};
+							if (data.error) {
+								$("#redeemFromStatus").removeClass('hidden').html(msgError);
+                            	$("#redeemFromBtn").html("Load").attr('disabled',false);
+								return;
+							}
+                            if (data.result){
+                                callback([data.result,index]);
+                            } else {
+                                $("#redeemFromStatus").removeClass('hidden').html('<span class="glyphicon glyphicon-exclamation-sign"></span> Unexpected error, unable to retrieve transation info');
+                                callback(false);
+                            }
+                        }
+//,
+//                        complete: function(data, status) {
+//                            $("#redeemFromBtn").html("Load").attr('disabled',false);
+//                            totalInputAmount();
+//                        }
+                    });
+                }
+            },
+		getInputAmount: function(endpoint) {
+			return function(txid, index, callback) {
+	 			$.ajax ({
+                    type: "GET",
+                    url: "" + endpoint + "/?method=blockchain.transaction.get&params[]=" + txid + '&params[]=true',
+                    dataType: "json",
+                    error: function(data) {
+                        callback(false);
+                    },
+                    success: function(data) {
+						if (coinjs.debug) {console.log(data)};
+						if (data.error) {
+							callback(false);
+							return;
+						}
+						if (data.result.vout.length > index) {
+							callback(data.result.vout[index].value * 1000000); // 1 sparklecoin is 1000000 'sparklecoshi'
+						} else {
+							callback(false);
+						}
+	
+                    },
+                });
+    
+			}
+		},
+		broadcast: function(endpoint) {
+			return function(thisbtn){
+				var orig_html = $(thisbtn).html();
+				$(thisbtn).html('Please wait, loading... <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>').attr('disabled',true);
+                $.ajax ({
+                    type: "GET",
+                    url: "" + endpoint + "/?method=blockchain.transaction.broadcast&params[]="+$("#rawTransaction").val(),
+                    dataType: "json",
+                    error: function(data, status, error) {
+                        $("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html('Failed to broadcast').prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+                    },
+                    success: function(data) {
+
+						if (data.error) {
+							$("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html('Failed to broadcast').prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+							return;
+						}
+                        
+                        if(data.result){
+                            $("#rawTransactionStatus").addClass('alert-success').removeClass('alert-danger').removeClass("hidden").html(' Txid: '+data.result);
+                        } else {
+                            $("#rawTransactionStatus").addClass('alert-danger').removeClass('alert-success').removeClass("hidden").html(' Unexpected error, please try again').prepend('<span class="glyphicon glyphicon-exclamation-sign"></span>');
+                        }
+                    },
+                    complete: function(data, status) {
+                        $("#rawTransactionStatus").fadeOut().fadeIn();
+                        $(thisbtn).html(orig_html).attr('disabled',false);		         
+                    }
+                });
+			}
+		}
+	};
+
 	var sparkleBasedExplorer = {
 		listUnspent: function(endpoint) {
 			return function(redeem){
@@ -1522,16 +1668,16 @@ var bcBasedExplorer = {
 		},
         sparklecoin: {
 			listUnspent: {
-                "iquidus": sparkleBasedExplorer.listUnspent('https://explorer.sparklecoin.com')
+				"ElectrumX": electrumxBasedExplorer.listUnspent('https://explorer.sparklecoin.com/electrumx')
 			},
 			broadcast: {
-                "iquidus": sparkleBasedExplorer.broadcast('https://explorer.sparklecoin.com')
+				"ElectrumX": electrumxBasedExplorer.broadcast('https://explorer.sparklecoin.com/electrumx'),
 			},
             getTransaction: {
-                "iquidus": sparkleBasedExplorer.getTransaction('https://explorer.sparklecoin.com')
+				"ElectrumX": electrumxBasedExplorer.getTransaction('https://explorer.sparklecoin.com/electrumx')
             },
 			getInputAmount: {
-                "iquidus": sparkleBasedExplorer.getInputAmount('https://explorer.sparklecoin.com')
+				"ElectrumX": electrumxBasedExplorer.getInputAmount('https://explorer.sparklecoin.com/electrumx')
 			}
 		},
         sparklecoin_testnet: {
